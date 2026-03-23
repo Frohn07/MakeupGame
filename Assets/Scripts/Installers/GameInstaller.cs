@@ -1,6 +1,8 @@
 using MakeupGame.Controllers;
+using MakeupGame.Core;
 using MakeupGame.Data;
 using MakeupGame.Services;
+using MakeupGame.Tools;
 using UnityEngine;
 using Zenject;
 
@@ -8,13 +10,13 @@ namespace MakeupGame.Installers
 {
     /// <summary>
     /// Scene-level Zenject installer.
-    /// Attach this to the SceneContext GameObject and assign MakeupConfig in the Inspector.
+    /// Attach to the SceneContext GameObject.
     ///
-    /// Binding strategy:
-    ///   • Services are pure C# → AsSingle (one instance per scene lifetime)
-    ///   • MakeupController implements IInitializable → BindInterfacesAndSelfTo
-    ///     so Zenject calls Initialize() automatically
-    ///   • MakeupConfig ScriptableObject → BindInstance (data-only, no DI needed internally)
+    /// Binding notes:
+    ///   • Services (pure C#)          → AsSingle
+    ///   • MakeupController            → BindInterfacesAndSelfTo (IInitializable + IDisposable + self)
+    ///   • Hand / FaceZone / Tools     → FromComponentInHierarchy (MonoBehaviours already in scene)
+    ///   • MakeupConfig (SO)           → BindInstance
     /// </summary>
     public class GameInstaller : MonoInstaller
     {
@@ -22,10 +24,10 @@ namespace MakeupGame.Installers
 
         public override void InstallBindings()
         {
-            // ── Data ────────────────────────────────────────────────────────────
+            // ── Data ─────────────────────────────────────────────────────────────
             Container.BindInstance(_makeupConfig).AsSingle();
 
-            // ── Services ────────────────────────────────────────────────────────
+            // ── Services ──────────────────────────────────────────────────────────
             Container.Bind<IMakeupService>()
                      .To<MakeupService>()
                      .AsSingle();
@@ -34,12 +36,37 @@ namespace MakeupGame.Installers
                      .To<ProgressService>()
                      .AsSingle();
 
-            // ── Controllers ─────────────────────────────────────────────────────
-            // BindInterfacesAndSelfTo → binds IInitializable + IDisposable + MakeupController
+            // ── Controllers ───────────────────────────────────────────────────────
             Container.BindInterfacesAndSelfTo<MakeupController>()
                      .AsSingle();
 
             Container.Bind<DragController>()
+                     .AsSingle();
+
+            // ── Core scene objects ────────────────────────────────────────────────
+            Container.Bind<Hand>()
+                     .FromComponentInHierarchy()
+                     .AsSingle();
+
+            // ── Tools (MonoBehaviours present in the scene) ───────────────────────
+            Container.Bind<LipstickTool>()
+                     .FromComponentInHierarchy()
+                     .AsSingle();
+
+            Container.Bind<BlushTool>()
+                     .FromComponentInHierarchy()
+                     .AsSingle();
+
+            Container.Bind<EyeshadowTool>()
+                     .FromComponentInHierarchy()
+                     .AsSingle();
+
+            Container.Bind<PowderTool>()
+                     .FromComponentInHierarchy()
+                     .AsSingle();
+
+            Container.Bind<CreamTool>()
+                     .FromComponentInHierarchy()
                      .AsSingle();
         }
     }

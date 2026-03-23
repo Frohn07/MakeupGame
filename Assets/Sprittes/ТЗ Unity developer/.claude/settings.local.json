@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__mcp-unity__get_console_logs",
+      "mcp__mcp-unity__get_scene_info",
+      "mcp__mcp-unity__get_gameobject",
+      "mcp__mcp-unity__execute_menu_item",
+      "Bash(python3:*)",
+      "Bash(findstr /i \"renderMode worldCamera planeDistance\")",
+      "mcp__mcp-unity__update_component",
+      "mcp__mcp-unity__recompile_scripts"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "mcp-unity"
+  ]
+}

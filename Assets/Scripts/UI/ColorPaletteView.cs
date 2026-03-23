@@ -48,7 +48,7 @@ namespace MakeupGame.UI
             _selectedView = clickedView;
             _selectedView.SetSelected(true);
 
-            _controller.SelectItem(clickedView.Data);
+            _controller.ChooseItem(clickedView.Data);
         }
 
         private void ClearViews()
