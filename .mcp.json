@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "mcp-unity": {
+      "command": "node",
+      "args": ["D:/Program Files/Unity Projects/Custom Pathfinding Demo/MakeupGame/Library/PackageCache/com.gamelovers.mcp-unity@72c005fa0a/Server~/build/index.js"]
+    }
+  }
+}

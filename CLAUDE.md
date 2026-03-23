@@ -45,9 +45,6 @@ Assets/Scripts/
 │   └── FaceApplier.cs                 — слушает MakeupService, показывает overlays
 ├── Installers/
 │   └── GameInstaller.cs               — MonoInstaller, все биндинги
-└── Editor/
-    ├── SceneBuilder.cs                — Tools → Build Scene
-    └── MakeupDataBuilder.cs           — Tools → Build Makeup Data
 ```
 
 ## Zenject Bindings (GameInstaller)
@@ -62,9 +59,16 @@ Assets/Scripts/
 - Инструменты: blush_brush, eye_brush, cream, loofah
 - UI: tabs_makeup_*, next_done_button, reset_button, shelf, background_pink
 
+## MCP Unity
+- Настроен: порт 8090, AutoStartServer: true
+- Конфиг: `ProjectSettings/McpUnitySettings.json`
+- Сервер: `Library/PackageCache/com.gamelovers.mcp-unity@72c005fa0a/Server~/build/index.js`
+- MCP конфиг для Claude Code: `.mcp.json` в корне проекта (стандартный формат)
+  - `.claude/settings.json` также содержит конфиг, но глобальный `~/.claude/settings.json` не поддерживает `mcpServers`
+- При запуске Claude Code нужно нажать **Approve** на запрос доверия серверу `mcp-unity`
+- Unity Editor должен быть открыт с проектом до запуска Claude Code (WebSocket на порту 8090)
+
 ## Known Issues / TODO
-- Ничего не происходит при нажатии Play — нужно запустить Build Scene + Build Makeup Data
-- FaceApplier wire overlays через SerializedObject в SceneBuilder
 - Drag система есть, но нет MonoBehaviour который читает Input и вызывает DragController
 - Нет InputHandler (MouseInputHandler / TouchInputHandler)
 - ResultOverlay спрайты не назначены в MakeupItemData (тонирование через TintColor)
