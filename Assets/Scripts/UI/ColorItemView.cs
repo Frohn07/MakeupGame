@@ -30,8 +30,8 @@ namespace MakeupGame.UI
             _button.onClick.AddListener(HandleClick);
         }
 
-        public void SetSelected(bool selected) =>
-            _selectionFrame.SetActive(selected);
+        public void SetSelected(bool selected) {  }
+            //_selectionFrame?.SetActive(selected);
 
         private void HandleClick() => OnClicked?.Invoke(this);
 

@@ -2,14 +2,15 @@ using System.Collections.Generic;
 using MakeupGame.Controllers;
 using MakeupGame.Data;
 using UnityEngine;
+using UnityEngine.UI;
 using Zenject;
 
 namespace MakeupGame.UI
 {
     /// <summary>
-    /// Displays a scrollable list of color items for the active category.
-    /// Rebuilds when the category changes; delegates selection to MakeupController.
-    /// (SRP: only responsible for rendering the palette; selection logic lives in Controller)
+    /// Spawns colour-item buttons for one category.
+    /// Category is assigned by MakeupTabsView.Init() — no manual Inspector setup needed.
+    /// Items are created once and never destroyed while the scene is alive.
     /// </summary>
     public class ColorPaletteView : MonoBehaviour
     {
@@ -23,16 +24,8 @@ namespace MakeupGame.UI
         private readonly List<ColorItemView> _views = new();
         private ColorItemView                _selectedView;
 
-        private void Start()
+        public void Init(MakeupCategory category)
         {
-            _controller.OnCategoryChanged += Rebuild;
-            Rebuild(_controller.CurrentCategory);
-        }
-
-        private void Rebuild(MakeupCategory category)
-        {
-            ClearViews();
-
             foreach (var itemData in _config.GetItemsByCategory(category))
             {
                 var view = _diContainer.InstantiatePrefabForComponent<ColorItemView>(_itemPrefab, _container);
@@ -40,6 +33,8 @@ namespace MakeupGame.UI
                 view.OnClicked += HandleItemClicked;
                 _views.Add(view);
             }
+
+            //Invoke(nameof(RemoveGridLayout), 1.0f);
         }
 
         private void HandleItemClicked(ColorItemView clickedView)
@@ -48,21 +43,19 @@ namespace MakeupGame.UI
             _selectedView = clickedView;
             _selectedView.SetSelected(true);
 
-            _controller.ChooseItem(clickedView.Data);
+            _controller.ChooseItem(clickedView.Data, clickedView.transform.position);
         }
 
-        private void ClearViews()
+        private void RemoveGridLayout()
+        {
+            var grid = _container.GetComponent<GridLayoutGroup>();
+            if (grid != null) Destroy(grid);
+        }
+
+        private void OnDestroy()
         {
             foreach (var view in _views)
-            {
                 view.OnClicked -= HandleItemClicked;
-                Destroy(view.gameObject);
-            }
-            _views.Clear();
-            _selectedView = null;
         }
-
-        private void OnDestroy() =>
-            _controller.OnCategoryChanged -= Rebuild;
     }
 }

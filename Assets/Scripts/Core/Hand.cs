@@ -1,5 +1,6 @@
 using DG.Tweening;
 using MakeupGame.Core.Interfaces;
+using System;
 using UnityEngine;
 
 namespace MakeupGame.Core
@@ -21,14 +22,25 @@ namespace MakeupGame.Core
     /// </summary>
     public class Hand : MonoBehaviour, IDraggable
     {
-        [SerializeField] private float   _moveDuration    = 0.35f;
-        [SerializeField] private Ease    _moveEase        = Ease.InOutSine;
-        [SerializeField] private Vector3 _defaultPosition;   // set in Inspector (resting position)
+        [SerializeField] private float     _moveDuration    = 0.35f;
+        [SerializeField] private Ease      _moveEase        = Ease.InOutSine;
+        [SerializeField] private Transform _waitAnchor;       // chest-level wait position (same for all tools)
+        [SerializeField] private Transform _defaultAnchor;    // resting position when idle
+        [SerializeField] private Transform brushPoint;
 
         // ── State ──────────────────────────────────────────────────────────────
 
         public ITool CurrentTool       { get; private set; }
         public bool  IsDraggingEnabled { get; private set; }
+
+        private Transform _toolOriginalParent;
+        private Vector3   _toolOriginalLocalPos;
+
+        /// <summary>Fired when the hand finishes the dip animation (reached colour position).</summary>
+        public event Action OnDipReached;
+
+        /// <summary>Fired when the hand has placed the tool back on the shelf (before flying to default).</summary>
+        public event Action OnReturnedToShelf;
 
         // ── Pick-up flow ───────────────────────────────────────────────────────
 
@@ -52,11 +64,17 @@ namespace MakeupGame.Core
 
         private void AfterShelfReached(ITool tool)
         {
+            SetToolPosition(tool);
+
             if (tool.DipPosition.HasValue)
             {
                 transform.DOMove(tool.DipPosition.Value, _moveDuration)
                          .SetEase(_moveEase)
-                         .OnComplete(() => MoveToWait(tool));
+                         .OnComplete(() =>
+                         {
+                             OnDipReached?.Invoke();
+                             MoveToWait(tool);
+                         });
             }
             else
             {
@@ -66,8 +84,7 @@ namespace MakeupGame.Core
 
         private void MoveToWait(ITool tool)
         {
-            
-            transform.DOMove(tool.WaitPosition, _moveDuration)
+            transform.DOMove(_waitAnchor.position, _moveDuration)
                      .SetEase(_moveEase)
                      .OnComplete(() => IsDraggingEnabled = true);
         }
@@ -89,8 +106,13 @@ namespace MakeupGame.Core
                      .SetEase(_moveEase)
                      .OnComplete(() =>
                      {
+                         CurrentTool.ToolTransform.rotation = Quaternion.identity;
+                         CurrentTool.ToolTransform.SetParent(_toolOriginalParent, worldPositionStays: false);
+                         CurrentTool.ToolTransform.localPosition = _toolOriginalLocalPos;
+
+                         OnReturnedToShelf?.Invoke();
                          CurrentTool = null;
-                         transform.DOMove(_defaultPosition, _moveDuration)
+                         transform.DOMove(_defaultAnchor.position, _moveDuration)
                                   .SetEase(_moveEase);
                      });
         }
@@ -118,5 +140,14 @@ namespace MakeupGame.Core
         }
 
         private void OnDestroy() => DOTween.Kill(transform);
+
+        private void SetToolPosition(ITool tool)
+        {
+            _toolOriginalParent   = tool.ToolTransform.parent;
+            _toolOriginalLocalPos = tool.ToolTransform.localPosition;
+            tool.ToolTransform.SetParent(transform, worldPositionStays: true);
+            tool.ToolTransform.position = brushPoint.position;
+            tool.ToolTransform.rotation = brushPoint.rotation;
+        }
     }
 }

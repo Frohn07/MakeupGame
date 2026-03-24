@@ -1,7 +1,6 @@
-using MakeupGame.Controllers;
 using MakeupGame.Core;
-using MakeupGame.Data;
 using MakeupGame.Services;
+using MakeupGame.UI;
 using UnityEngine;
 using Zenject;
 
@@ -10,26 +9,47 @@ namespace MakeupGame.Tools
     /// <summary>
     /// Lipstick tool. No dip step — hand goes straight to WaitPosition.
     ///
+    /// Each lipstick colour lives in the palette as its own prefab instance
+    /// that has BOTH ColorItemView and LipstickTool on the same GameObject.
+    /// So instead of listening to the global OnItemChosen event (which would
+    /// fire on ALL instances), each LipstickTool subscribes to the click of
+    /// its own ColorItemView via GetComponent — only THIS instance reacts.
+    ///
     /// Flow:
-    ///   1. Player taps a lipstick colour → MakeupController.OnItemChosen fires.
-    ///   2. This tool catches the event (filters by Lipstick category).
-    ///   3. Stores the item, asks Hand to pick up this tool.
+    ///   1. Player taps this lipstick → ColorItemView.OnClicked fires.
+    ///   2. HandleClicked: stores item, ShelfPosition = this object's world pos.
+    ///   3. Hand.PickUp(this) starts the animation sequence.
     ///   4. When Hand arrives on FaceZone → Apply() is called.
     ///   5. Apply() notifies MakeupService → FaceApplier updates the lip overlay.
     /// </summary>
     public class LipstickTool : BaseTool
     {
-        [Inject] private IMakeupService   _makeupService;
-        [Inject] private MakeupController _controller;
-        [Inject] private Hand             _hand;
+        // ShelfPosition is dynamic — the hand flies to this object's palette position.
+        private Vector3 _shelfPosition;
+        public override Vector3 ShelfPosition => _shelfPosition;
 
-        private void Start()  => _controller.OnItemChosen += OnItemChosen;
-        private void OnDestroy() => _controller.OnItemChosen -= OnItemChosen;
+        [Inject] private IMakeupService _makeupService;
+        [Inject] private Hand           _hand;
 
-        private void OnItemChosen(MakeupItemData item)
+        private ColorItemView _view;
+
+        private void Start()
         {
-            if (item.Category != MakeupCategory.Lipstick) return;
-            SetItem(item);
+            _view = GetComponent<ColorItemView>();
+            if (_view != null)
+                _view.OnClicked += HandleClicked;
+        }
+
+        private void OnDestroy()
+        {
+            if (_view != null)
+                _view.OnClicked -= HandleClicked;
+        }
+
+        private void HandleClicked(ColorItemView view)
+        {
+            SetItem(view.Data);
+            _shelfPosition = transform.position;
             _hand.PickUp(this);
         }
 

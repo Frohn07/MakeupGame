@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Eyeshadow_04
   m_EditorClassIdentifier: 
   _category: 1
-  _icon: {fileID: 21300000, guid: 6ae05142cc8b2854eb6dde18645c5e75, type: 3}
-  _resultOverlay: {fileID: 0}
-  _tintColor: {r: 1, g: 1, b: 1, a: 1}
+  _icon: {fileID: 21300000, guid: 1dff8953da7d3e74a9660a4c193cfde9, type: 3}
+  _resultOverlay: {fileID: 21300000, guid: 6ae05142cc8b2854eb6dde18645c5e75, type: 3}
+  _tintColor: {r: 0.87843144, g: 0.6, b: 0.41176474, a: 1}
   _isLockedByDefault: 0

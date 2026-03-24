@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Blush_03
   m_EditorClassIdentifier: 
   _category: 2
-  _icon: {fileID: 21300000, guid: 72183724d39857d4ba9e1585643f7387, type: 3}
-  _resultOverlay: {fileID: 0}
-  _tintColor: {r: 1, g: 1, b: 1, a: 1}
+  _icon: {fileID: 21300000, guid: d3593ce1406be754e9dd6308abd42e93, type: 3}
+  _resultOverlay: {fileID: 21300000, guid: 72183724d39857d4ba9e1585643f7387, type: 3}
+  _tintColor: {r: 1, g: 0.7607844, b: 0.69803923, a: 1}
   _isLockedByDefault: 0

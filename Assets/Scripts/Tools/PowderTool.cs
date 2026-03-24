@@ -13,19 +13,16 @@ namespace MakeupGame.Tools
     /// </summary>
     public class PowderTool : BaseTool
     {
-        [SerializeField] private Transform _dipAnchor;   // optional; leave null for no dip
-
         [Inject] private IMakeupService   _makeupService;
         [Inject] private MakeupController _controller;
         [Inject] private Hand             _hand;
 
-        public override Vector3? DipPosition =>
-            _dipAnchor != null ? _dipAnchor.position : (Vector3?)null;
+        // Powder has no colour palette dip — DipPosition stays null.
 
         private void Start()     => _controller.OnItemChosen += OnItemChosen;
         private void OnDestroy() => _controller.OnItemChosen -= OnItemChosen;
 
-        private void OnItemChosen(MakeupItemData item)
+        private void OnItemChosen(MakeupItemData item, Vector3 _)
         {
             if (item.Category != MakeupCategory.Powder) return;
             SetItem(item);

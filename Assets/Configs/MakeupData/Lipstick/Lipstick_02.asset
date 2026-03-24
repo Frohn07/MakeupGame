@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Lipstick_02
   m_EditorClassIdentifier: 
   _category: 0
-  _icon: {fileID: 21300000, guid: d72dfddaea5008c45a46daa7fbc07d82, type: 3}
-  _resultOverlay: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 147cfeb2574106a4986084056c318a94, type: 3}
+  _resultOverlay: {fileID: 21300000, guid: d72dfddaea5008c45a46daa7fbc07d82, type: 3}
   _tintColor: {r: 1, g: 1, b: 1, a: 1}
   _isLockedByDefault: 0

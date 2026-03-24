@@ -23,6 +23,8 @@ namespace MakeupGame.UI
         /// <summary>
         /// Zenject injects via method — guarantees service is ready before we subscribe.
         /// </summary>
+        private void Awake() => SetOverlaysActive(false);
+
         [Inject]
         private void Construct(IMakeupService makeupService)
         {

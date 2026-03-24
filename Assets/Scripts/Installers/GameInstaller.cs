@@ -49,9 +49,9 @@ namespace MakeupGame.Installers
                      .AsSingle();
 
             // ── Tools (MonoBehaviours present in the scene) ───────────────────────
-            Container.Bind<LipstickTool>()
-                     .FromComponentInHierarchy()
-                     .AsSingle();
+            // LipstickTool: multiple instances exist in the palette (one per colour),
+            // so we do NOT bind it as AsSingle. Zenject injects Hand + IMakeupService
+            // into each instance automatically when the prefab is spawned.
 
             Container.Bind<BlushTool>()
                      .FromComponentInHierarchy()

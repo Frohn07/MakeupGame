@@ -18,16 +18,25 @@ namespace MakeupGame.Core
     {
         [Inject] private Hand _hand;
 
-        private void OnTriggerEnter2D(Collider2D other)
+        private bool _applied;
+
+        private void OnTriggerEnter2D(Collider2D other) => TryApply(other);
+        private void OnTriggerStay2D(Collider2D other)  => TryApply(other);
+
+        private void OnTriggerExit2D(Collider2D other)
         {
+            if (other.TryGetComponent<Hand>(out _)) _applied = false;
+        }
+
+        private void TryApply(Collider2D other)
+        {
+            if (_applied) return;
             if (!other.TryGetComponent<Hand>(out _)) return;
+            if (_hand.CurrentTool == null || !_hand.IsDraggingEnabled) return;
 
-
-            if (_hand.CurrentTool != null && _hand.IsDraggingEnabled)
-            {
-                _hand.CurrentTool.Apply();
-                _hand.ReturnToShelf();
-            }
+            _applied = true;
+            _hand.CurrentTool.Apply();
+            _hand.ReturnToShelf();
         }
     }
 }

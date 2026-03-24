@@ -15,15 +15,18 @@ namespace MakeupGame.Core.Interfaces
         /// <summary>Where the Hand animates to in order to pick up this tool.</summary>
         Vector3 ShelfPosition { get; }
 
-        /// <summary>Where the Hand waits (at chest level) before the player drags.</summary>
-        Vector3 WaitPosition { get; }
-
         /// <summary>
         /// Optional intermediate stop before WaitPosition.
         /// Brush tools use this to "dip" into the selected palette colour.
         /// Null for cream and lipstick.
         /// </summary>
         Vector3? DipPosition { get; }
+
+        /// <summary>
+        /// The Transform of the tool GameObject.
+        /// Hand uses this to dynamically reparent the tool during pickup/return.
+        /// </summary>
+        Transform ToolTransform { get; }
 
         /// <summary>
         /// Called by FaceZone when the Hand is released inside the face area.
