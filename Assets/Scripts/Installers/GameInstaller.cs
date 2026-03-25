@@ -33,7 +33,7 @@ namespace MakeupGame.Installers
                      .AsSingle();
 
             // ── Controllers ───────────────────────────────────────────────────────
-            Container.BindInterfacesAndSelfTo<MakeupController>()
+            Container.Bind<MakeupController>()
                      .AsSingle();
 
             Container.Bind<DragController>()

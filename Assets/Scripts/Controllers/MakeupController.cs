@@ -18,7 +18,7 @@ namespace MakeupGame.Controllers
     ///      (Apply() in each tool calls the service at the right moment).
     /// DIP: depends on IMakeupService abstraction.
     /// </summary>
-    public class MakeupController : IInitializable, IDisposable
+    public class MakeupController
     {
         public event Action<MakeupCategory> OnCategoryChanged;
 
@@ -41,8 +41,6 @@ namespace MakeupGame.Controllers
 
         public MakeupCategory CurrentCategory => _currentCategory;
 
-        public void Initialize() { }
-
         public void SelectCategory(MakeupCategory category)
         {
             if (_currentCategory == category) return;
@@ -60,7 +58,5 @@ namespace MakeupGame.Controllers
 
         public void ResetMakeup() =>
             _makeupService.ResetAll();
-
-        public void Dispose() { }
     }
 }

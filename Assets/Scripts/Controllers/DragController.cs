@@ -1,6 +1,5 @@
 using MakeupGame.Core.Interfaces;
 using UnityEngine;
-using Zenject;
 
 namespace MakeupGame.Controllers
 {
@@ -9,13 +8,11 @@ namespace MakeupGame.Controllers
     /// Decouples input handling from individual tool implementations.
     /// (SRP: only responsible for routing drag events to the active draggable)
     /// </summary>
-    public class DragController : IInitializable
+    public class DragController
     {
         private IDraggable _activeDraggable;
 
         public bool IsDragging => _activeDraggable != null;
-
-        public void Initialize() { }
 
         public void BeginDrag(IDraggable draggable, Vector2 screenPosition)
         {
