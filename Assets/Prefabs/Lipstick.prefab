@@ -135,7 +135,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _shelfAnchor: {fileID: 0}
-  _waitAnchor: {fileID: 0}
 --- !u!114 &3741966074808102813
 MonoBehaviour:
   m_ObjectHideFlags: 0

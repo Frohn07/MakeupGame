@@ -31,7 +31,7 @@ namespace MakeupGame.Controllers
         public event Action<MakeupItemData, Vector3> OnItemChosen;
 
         private readonly IMakeupService _makeupService;
-        private MakeupCategory _currentCategory = MakeupCategory.Lipstick;
+        private MakeupCategory _currentCategory = MakeupCategory.Blush;
 
         [Inject]
         public MakeupController(IMakeupService makeupService)
