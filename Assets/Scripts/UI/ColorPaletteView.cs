@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using MakeupGame.Controllers;
 using MakeupGame.Data;
@@ -23,6 +24,7 @@ namespace MakeupGame.UI
 
         private readonly List<ColorItemView> _views = new();
         private ColorItemView                _selectedView;
+        private bool                         _gridRemoved;
 
         public void Init(MakeupCategory category)
         {
@@ -34,7 +36,29 @@ namespace MakeupGame.UI
                 _views.Add(view);
             }
 
-            //Invoke(nameof(RemoveGridLayout), 1.0f);
+            // If already active (initial tab), finalize layout next frame.
+            // If inactive, OnEnable will handle it when the tab is first shown.
+            if (gameObject.activeInHierarchy)
+                StartCoroutine(FinalizeLayoutNextFrame());
+        }
+
+        private void OnEnable()
+        {
+            if (_gridRemoved || _views.Count == 0) return;
+            StartCoroutine(FinalizeLayoutNextFrame());
+        }
+
+        private IEnumerator FinalizeLayoutNextFrame()
+        {
+            yield return null;
+            FinalizeLayout();
+        }
+
+        private void FinalizeLayout()
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_container as RectTransform);
+            RemoveGridLayout();
+            _gridRemoved = true;
         }
 
         private void HandleItemClicked(ColorItemView clickedView)
