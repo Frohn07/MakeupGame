@@ -14,7 +14,7 @@ namespace MakeupGame.Installers
     ///
     /// Binding notes:
     ///   • Services (pure C#)          → AsSingle
-    ///   • MakeupController            → BindInterfacesAndSelfTo (IInitializable + IDisposable + self)
+    ///   • MakeupController            → Bind (plain self binding, no lifecycle interfaces)
     ///   • Hand / FaceZone / Tools     → FromComponentInHierarchy (MonoBehaviours already in scene)
     ///   • MakeupConfig (SO)           → BindInstance
     /// </summary>

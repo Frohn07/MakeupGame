@@ -8,7 +8,7 @@ namespace MakeupGame.Core
     /// Base class for colour-based makeup tools (lipstick, blush, eyeshadow, powder).
     ///
     /// Responsibilities (SRP):
-    ///   • Exposes the three world-space positions the Hand needs.
+    ///   • Exposes PickupPosition (= transform.position) and ToolTransform for Hand.
     ///   • Holds the currently selected MakeupItemData.
     ///   • Delegates the actual visual effect to each subclass via Apply().
     ///
@@ -18,7 +18,8 @@ namespace MakeupGame.Core
     ///   • Show/hide — tools are always present in the scene.
     ///
     /// SOLID:
-    ///   OCP — extend by subclassing and overriding Apply() / DipPosition.
+    ///   OCP — extend by subclassing and overriding Apply(). Tools needing a prep
+    ///         step additionally implement IPreparable — no changes to Hand required.
     ///   LSP — any subclass can substitute BaseTool wherever ITool is expected.
     ///   DIP — consumers depend on ITool, not on concrete tool types.
     /// </summary>

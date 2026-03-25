@@ -8,7 +8,7 @@ namespace MakeupGame.Core
     /// The Hand is the single draggable actor in the scene.
     ///
     /// Responsibilities (SRP):
-    ///   • Animates to a tool's positions (Shelf → Dip? → Wait).
+    ///   • Animates to a tool's PickupPosition, then PreparePosition if IPreparable, then Wait.
     ///   • Moves with the player's finger/mouse while IsDraggingEnabled.
     ///   • Returns the tool to the shelf after Apply().
     ///
@@ -43,9 +43,10 @@ namespace MakeupGame.Core
 
         /// <summary>
         /// Starts the automatic animation sequence:
-        ///   1. Move to ShelfPosition (pick-up).
-        ///   2. Move to DipPosition if the tool has one (brush dip into colour).
-        ///   3. Move to WaitPosition — then enable player drag.
+        ///   1. Move to tool.PickupPosition (pick up the tool).
+        ///   2. If tool is IPreparable — move to PreparePosition (e.g. brush dip into colour).
+        ///   3. Move to WaitAnchor — then enable player drag.
+        /// Ignored if hand is already holding a tool (CurrentTool != null).
         /// </summary>
         public void PickUp(ITool tool)
         {
