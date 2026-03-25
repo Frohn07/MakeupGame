@@ -51,6 +51,7 @@ namespace MakeupGame.Tools
         private void OnItemChosen(MakeupItemData item, Vector3 colorWorldPosition)
         {
             if (item.Category != MakeupCategory.Blush) return;
+            if (_hand.CurrentTool != null) return;
             SetItem(item);
             PreparePosition   = colorWorldPosition;
             _pendingTintColor = item.TintColor;

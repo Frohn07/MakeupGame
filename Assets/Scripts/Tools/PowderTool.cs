@@ -25,6 +25,7 @@ namespace MakeupGame.Tools
         private void OnItemChosen(MakeupItemData item, Vector3 _)
         {
             if (item.Category != MakeupCategory.Powder) return;
+            if (_hand.CurrentTool != null) return;
             SetItem(item);
             _hand.PickUp(this);
         }

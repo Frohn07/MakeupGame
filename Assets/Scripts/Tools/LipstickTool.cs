@@ -45,6 +45,7 @@ namespace MakeupGame.Tools
 
         private void HandleClicked(ColorItemView view)
         {
+            if (_hand.CurrentTool != null) return;
             SetItem(view.Data);
             _hand.PickUp(this);
         }

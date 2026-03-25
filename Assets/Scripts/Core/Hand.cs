@@ -49,6 +49,8 @@ namespace MakeupGame.Core
         /// </summary>
         public void PickUp(ITool tool)
         {
+            if (CurrentTool != null) return;
+
             CurrentTool       = tool;
             IsDraggingEnabled = false;
 

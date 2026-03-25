@@ -1,5 +1,6 @@
 using System;
 using MakeupGame.Controllers;
+using MakeupGame.Core;
 using MakeupGame.Data;
 using UnityEngine;
 using UnityEngine.UI;
@@ -30,13 +31,18 @@ namespace MakeupGame.UI
         [SerializeField] private TabEntry[] _tabs;
 
         [Inject] private MakeupController _controller;
+        [Inject] private Hand             _hand;
 
         private void Start()
         {
             foreach (var tab in _tabs)
             {
                 var captured = tab;
-                tab.Button.onClick.AddListener(() => _controller.SelectCategory(captured.Category));
+                tab.Button.onClick.AddListener(() =>
+                {
+                    if (_hand.CurrentTool != null) return;
+                    _controller.SelectCategory(captured.Category);
+                });
 
                 // Initialise the palette on this page once, right here.
                 // MakeupTabsView already knows Category ↔ Page — no need to set it in Inspector.
