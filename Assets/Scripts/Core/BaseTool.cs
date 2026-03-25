@@ -24,18 +24,10 @@ namespace MakeupGame.Core
     /// </summary>
     public abstract class BaseTool : MonoBehaviour, ITool
     {
-        [SerializeField] private Transform _shelfAnchor;
-
         // ── ITool ──────────────────────────────────────────────────────────────
 
-        public virtual Vector3 ShelfPosition => _shelfAnchor.position;
+        public virtual Vector3 PickupPosition => transform.position;
         public Transform       ToolTransform => transform;
-
-        /// <summary>
-        /// Brush tools override this to return the dip anchor position.
-        /// Returns null by default (no dip step).
-        /// </summary>
-        public virtual Vector3? DipPosition => null;
 
         public abstract void Apply();
 

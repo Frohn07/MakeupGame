@@ -12,15 +12,8 @@ namespace MakeupGame.Core.Interfaces
     /// </summary>
     public interface ITool
     {
-        /// <summary>Where the Hand animates to in order to pick up this tool.</summary>
-        Vector3 ShelfPosition { get; }
-
-        /// <summary>
-        /// Optional intermediate stop before WaitPosition.
-        /// Brush tools use this to "dip" into the selected palette colour.
-        /// Null for cream and lipstick.
-        /// </summary>
-        Vector3? DipPosition { get; }
+        /// <summary>World position the Hand flies to in order to pick up this tool.</summary>
+        Vector3 PickupPosition { get; }
 
         /// <summary>
         /// The Transform of the tool GameObject.

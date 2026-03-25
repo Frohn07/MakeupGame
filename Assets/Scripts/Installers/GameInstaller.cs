@@ -32,10 +32,6 @@ namespace MakeupGame.Installers
                      .To<MakeupService>()
                      .AsSingle();
 
-            Container.Bind<IProgressService>()
-                     .To<ProgressService>()
-                     .AsSingle();
-
             // ── Controllers ───────────────────────────────────────────────────────
             Container.BindInterfacesAndSelfTo<MakeupController>()
                      .AsSingle();

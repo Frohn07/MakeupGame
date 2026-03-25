@@ -24,9 +24,6 @@ namespace MakeupGame.Tools
     /// </summary>
     public class LipstickTool : BaseTool
     {
-        // ShelfPosition is dynamic — the hand flies to this object's palette position.
-        private Vector3 _shelfPosition;
-        public override Vector3 ShelfPosition => _shelfPosition;
 
         [Inject] private IMakeupService _makeupService;
         [Inject] private Hand           _hand;
@@ -49,7 +46,6 @@ namespace MakeupGame.Tools
         private void HandleClicked(ColorItemView view)
         {
             SetItem(view.Data);
-            _shelfPosition = transform.position;
             _hand.PickUp(this);
         }
 

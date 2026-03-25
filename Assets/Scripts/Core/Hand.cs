@@ -1,6 +1,5 @@
 using DG.Tweening;
 using MakeupGame.Core.Interfaces;
-using System;
 using UnityEngine;
 
 namespace MakeupGame.Core
@@ -35,16 +34,10 @@ namespace MakeupGame.Core
 
         private Transform     _toolOriginalParent;
         private Vector3       _toolOriginalLocalPos;
-        private Vector3       _cachedShelfPosition;
+        private Vector3       _cachedPickupPosition;
         private HandAnimation _handAnimation;
 
-        /// <summary>Fired when the hand finishes the dip animation (reached colour position).</summary>
-        public event Action OnDipReached;
-
         private void Awake() => _handAnimation = GetComponent<HandAnimation>();
-
-        /// <summary>Fired when the hand has placed the tool back on the shelf (before flying to default).</summary>
-        public event Action OnReturnedToShelf;
 
         // ── Pick-up flow ───────────────────────────────────────────────────────
 
@@ -61,23 +54,23 @@ namespace MakeupGame.Core
 
             DOTween.Kill(transform);
 
-            transform.DOMove(tool.ShelfPosition, _moveDuration)
+            transform.DOMove(tool.PickupPosition, _moveDuration)
                      .SetEase(_moveEase)
                      .OnComplete(() => AfterShelfReached(tool));
         }
 
         private void AfterShelfReached(ITool tool)
         {
-            _cachedShelfPosition = tool.ShelfPosition; // cache before SetParent — anchor moves with tool after reparenting
+            _cachedPickupPosition = tool.PickupPosition; // cache before SetParent — anchor moves with tool after reparenting
             SetToolPosition(tool);
 
-            if (tool.DipPosition.HasValue)
+            if (tool is IPreparable preparable)
             {
-                transform.DOMove(tool.DipPosition.Value, _moveDuration)
+                transform.DOMove(preparable.PreparePosition, _moveDuration)
                          .SetEase(_moveEase)
                          .OnComplete(() =>
                          {
-                             OnDipReached?.Invoke();
+                             preparable.OnPrepared();
 
                              if (_handAnimation != null)
                                  _handAnimation.PlayDip(() => MoveToWait(tool));
@@ -116,12 +109,12 @@ namespace MakeupGame.Core
 
         private void DoReturnToShelf()
         {
-            var tool     = CurrentTool;
-            var shelfPos = _cachedShelfPosition;
+            var tool      = CurrentTool;
+            var pickupPos = _cachedPickupPosition;
 
             DOTween.Kill(transform);
 
-            transform.DOMove(shelfPos, _moveDuration)
+            transform.DOMove(pickupPos, _moveDuration)
                      .SetEase(_moveEase)
                      .OnComplete(() =>
                      {
@@ -130,7 +123,9 @@ namespace MakeupGame.Core
                          toolTr.localPosition = _toolOriginalLocalPos;
                          toolTr.localRotation = Quaternion.identity;
 
-                         OnReturnedToShelf?.Invoke();
+                         if (tool is IPreparable preparable)
+                             preparable.OnReturned();
+
                          CurrentTool = null;
                          transform.DOMove(_defaultAnchor.position, _moveDuration)
                                   .SetEase(_moveEase);

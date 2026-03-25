@@ -16,8 +16,6 @@ namespace MakeupGame.Tools
 
         [Inject] private Hand _hand;
 
-        public override Vector3? DipPosition => null;
-
         /// <summary>Called by Unity Button when player taps the cream.</summary>
         public void OnTapped() => _hand.PickUp(this);
 

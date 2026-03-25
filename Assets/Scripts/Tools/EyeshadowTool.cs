@@ -1,5 +1,6 @@
 using MakeupGame.Controllers;
 using MakeupGame.Core;
+using MakeupGame.Core.Interfaces;
 using MakeupGame.Data;
 using MakeupGame.Services;
 using UnityEngine;
@@ -9,25 +10,33 @@ using Zenject;
 namespace MakeupGame.Tools
 {
     /// <summary>
-    /// Eyeshadow brush tool. Same dip mechanic as BlushTool.
-    ///
-    /// Flow:
-    ///   1. Player taps an eyeshadow colour → MakeupController.OnItemChosen fires.
-    ///   2. Brush tip colour updated.
-    ///   3. Hand picks up brush → dips → waits → player drags to face → Apply().
+    /// Eyeshadow brush tool. Same IPreparable mechanic as BlushTool —
+    /// Hand dips brush into the selected colour swatch before the player drags.
     /// </summary>
-    public class EyeshadowTool : BaseTool
+    public class EyeshadowTool : BaseTool, IPreparable
     {
-        [SerializeField] private Image _brushTip;  // UI Image (Canvas)
+        [SerializeField] private Image _brushTip;
 
         [Inject] private IMakeupService   _makeupService;
         [Inject] private MakeupController _controller;
         [Inject] private Hand             _hand;
 
-        private Vector3? _dipPosition;
-        private Color    _pendingTintColor;
+        private Color _pendingTintColor;
 
-        public override Vector3? DipPosition => _dipPosition;
+        // ── IPreparable ────────────────────────────────────────────────────────
+
+        public Vector3 PreparePosition { get; private set; }
+
+        public void OnPrepared()
+        {
+            if (_brushTip == null) return;
+            _brushTip.color = _pendingTintColor;
+            _brushTip.gameObject.SetActive(true);
+        }
+
+        public void OnReturned() => _brushTip?.gameObject.SetActive(false);
+
+        // ── Lifecycle ──────────────────────────────────────────────────────────
 
         private void Start()     => _controller.OnItemChosen += OnItemChosen;
         private void OnDestroy() => _controller.OnItemChosen -= OnItemChosen;
@@ -36,27 +45,12 @@ namespace MakeupGame.Tools
         {
             if (item.Category != MakeupCategory.Eyeshadow) return;
             SetItem(item);
-            _dipPosition       = colorWorldPosition;
-            _pendingTintColor  = item.TintColor;
-
-            _hand.OnDipReached       += HandleDipReached;
-            _hand.OnReturnedToShelf  += HandleReturnedToShelf;
+            PreparePosition   = colorWorldPosition;
+            _pendingTintColor = item.TintColor;
             _hand.PickUp(this);
         }
 
-        private void HandleDipReached()
-        {
-            _hand.OnDipReached -= HandleDipReached;
-            if (_brushTip == null) return;
-            _brushTip.color = _pendingTintColor;
-            _brushTip.gameObject.SetActive(true);
-        }
-
-        private void HandleReturnedToShelf()
-        {
-            _hand.OnReturnedToShelf -= HandleReturnedToShelf;
-            _brushTip?.gameObject.SetActive(false);
-        }
+        // ── ITool ──────────────────────────────────────────────────────────────
 
         public override void Apply() => _makeupService.SelectItem(CurrentItem);
     }

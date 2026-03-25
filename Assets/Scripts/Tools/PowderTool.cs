@@ -17,7 +17,7 @@ namespace MakeupGame.Tools
         [Inject] private MakeupController _controller;
         [Inject] private Hand             _hand;
 
-        // Powder has no colour palette dip — DipPosition stays null.
+        // Powder has no colour palette step — does not implement IPreparable.
 
         private void Start()     => _controller.OnItemChosen += OnItemChosen;
         private void OnDestroy() => _controller.OnItemChosen -= OnItemChosen;
