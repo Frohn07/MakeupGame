@@ -1,5 +1,6 @@
 # Claude Code project instructions (local only)
 CLAUDE.md
+.claude/
 
 # This .gitignore file should be placed at the root of your Unity project directory
 #
