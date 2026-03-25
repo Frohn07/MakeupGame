@@ -33,11 +33,15 @@ namespace MakeupGame.Core
         public ITool CurrentTool       { get; private set; }
         public bool  IsDraggingEnabled { get; private set; }
 
-        private Transform _toolOriginalParent;
-        private Vector3   _toolOriginalLocalPos;
+        private Transform     _toolOriginalParent;
+        private Vector3       _toolOriginalLocalPos;
+        private Vector3       _cachedShelfPosition;
+        private HandAnimation _handAnimation;
 
         /// <summary>Fired when the hand finishes the dip animation (reached colour position).</summary>
         public event Action OnDipReached;
+
+        private void Awake() => _handAnimation = GetComponent<HandAnimation>();
 
         /// <summary>Fired when the hand has placed the tool back on the shelf (before flying to default).</summary>
         public event Action OnReturnedToShelf;
@@ -64,6 +68,7 @@ namespace MakeupGame.Core
 
         private void AfterShelfReached(ITool tool)
         {
+            _cachedShelfPosition = tool.ShelfPosition; // cache before SetParent — anchor moves with tool after reparenting
             SetToolPosition(tool);
 
             if (tool.DipPosition.HasValue)
@@ -73,7 +78,11 @@ namespace MakeupGame.Core
                          .OnComplete(() =>
                          {
                              OnDipReached?.Invoke();
-                             MoveToWait(tool);
+
+                             if (_handAnimation != null)
+                                 _handAnimation.PlayDip(() => MoveToWait(tool));
+                             else
+                                 MoveToWait(tool);
                          });
             }
             else
@@ -98,7 +107,17 @@ namespace MakeupGame.Core
         public void ReturnToShelf()
         {
             IsDraggingEnabled = false;
-            var shelfPos = CurrentTool.ShelfPosition;
+
+            if (_handAnimation != null)
+                _handAnimation.PlayApply(DoReturnToShelf);
+            else
+                DoReturnToShelf();
+        }
+
+        private void DoReturnToShelf()
+        {
+            var tool     = CurrentTool;
+            var shelfPos = _cachedShelfPosition;
 
             DOTween.Kill(transform);
 
@@ -106,9 +125,10 @@ namespace MakeupGame.Core
                      .SetEase(_moveEase)
                      .OnComplete(() =>
                      {
-                         CurrentTool.ToolTransform.rotation = Quaternion.identity;
-                         CurrentTool.ToolTransform.SetParent(_toolOriginalParent, worldPositionStays: false);
-                         CurrentTool.ToolTransform.localPosition = _toolOriginalLocalPos;
+                         var toolTr = tool.ToolTransform;
+                         toolTr.SetParent(_toolOriginalParent, worldPositionStays: false);
+                         toolTr.localPosition = _toolOriginalLocalPos;
+                         toolTr.localRotation = Quaternion.identity;
 
                          OnReturnedToShelf?.Invoke();
                          CurrentTool = null;
@@ -145,9 +165,9 @@ namespace MakeupGame.Core
         {
             _toolOriginalParent   = tool.ToolTransform.parent;
             _toolOriginalLocalPos = tool.ToolTransform.localPosition;
-            tool.ToolTransform.SetParent(transform, worldPositionStays: true);
-            tool.ToolTransform.position = brushPoint.position;
-            tool.ToolTransform.rotation = brushPoint.rotation;
+            tool.ToolTransform.SetParent(brushPoint, worldPositionStays: false);
+            tool.ToolTransform.localPosition = Vector3.zero;
+            tool.ToolTransform.localRotation = Quaternion.identity;
         }
     }
 }

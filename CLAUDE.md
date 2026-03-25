@@ -1,87 +1,95 @@
 # MakeupGame — Project Context for Claude
 
 ## Project
-Unity тестовое задание — игра-макияж. Демонстрационный проект с акцентом на качество кода.
+Unity тестовое задание — игра-макияж (крем, тени, помада, румяна).
+Демонстрация SOLID + Zenject архитектуры для Junior Unity позиции.
 
-## Branch
-`feature/core-architecture` (main — для PR)
+## Branches
+- `feature/application-of-makeup-tools` — основная механика
+- `feature/visual-polish` — визуал, Canvas, анимации
+- `main` — для PR
 
 ## Plugins
-- **Zenject** — Dependency Injection контейнер
-- **DOTween** — анимации (пока не используется)
+- **Zenject** — Dependency Injection
+- **DOTween** — анимации движения руки
 
-## Architecture (созданные файлы)
+## Architecture
 
 ```
 Assets/Scripts/
 ├── Core/
-│   ├── BaseTool.cs                    — abstract MonoBehaviour + ITool + IDraggable
+│   ├── Hand.cs                — движение руки (DOTween), SetParent инструмента
+│   ├── BaseTool.cs            — abstract, ITool, ShelfPosition/DipPosition/ToolTransform
+│   ├── FaceZone.cs            — триггер зоны лица, вызывает Apply() + ReturnToShelf()
 │   └── Interfaces/
-│       ├── ITool.cs                   — выбор/снятие инструмента
-│       ├── IDraggable.cs              — drag & drop
-│       └── IMakeupApplier.cs          — нанесение эффекта (для будущего FaceZone)
+│       ├── ITool.cs           — ShelfPosition, DipPosition, ToolTransform, Apply()
+│       └── IDraggable.cs      — OnDragStart/OnDrag/OnDragEnd
 ├── Data/
-│   ├── Enums/MakeupCategory.cs        — Lipstick=0, Eyeshadow=1, Blush=2, Powder=3
-│   ├── MakeupItemData.cs              — ScriptableObject (icon, resultOverlay, tintColor)
-│   └── MakeupConfig.cs                — ScriptableObject, хранит списки по категориям
+│   ├── Enums/MakeupCategory.cs — Lipstick=0, Eyeshadow=1, Blush=2, Powder=3
+│   ├── MakeupItemData.cs       — ScriptableObject: Icon, TintColor, ResultOverlay
+│   └── MakeupConfig.cs         — ScriptableObject: списки по категориям
 ├── Services/
-│   ├── IMakeupService.cs              — интерфейс стейта выбора + C# events
-│   ├── MakeupService.cs               — реализация, Dictionary<category, item>
-│   ├── IProgressService.cs            — разблокировка уровней
-│   └── ProgressService.cs             — PlayerPrefs persistence
+│   ├── IMakeupService.cs       — SelectItem, ResetAll, события
+│   ├── MakeupService.cs        — Dictionary<category, item>
+│   ├── IProgressService.cs
+│   └── ProgressService.cs      — PlayerPrefs
 ├── Controllers/
-│   ├── MakeupController.cs            — медиатор UI ↔ сервис, IInitializable
-│   └── DragController.cs              — роутит drag-события к IDraggable
+│   ├── MakeupController.cs     — event OnItemChosen(MakeupItemData, Vector3)
+│   │                             event OnCategoryChanged(MakeupCategory)
+│   └── DragController.cs       — роутит Input → IDraggable
 ├── Tools/
-│   ├── BaseTool.cs                    — drag движение + ApplyMakeupEffect()
-│   ├── LipstickTool.cs
-│   ├── BlushTool.cs
-│   ├── EyeshadowTool.cs
+│   ├── LipstickTool.cs         — подписывается на свой ColorItemView (GetComponent)
+│   ├── BlushTool.cs            — динамический DipPosition, управляет BrushTip
+│   ├── EyeshadowTool.cs        — то же что BlushTool
+│   ├── CreamTool.cs            — кнопка → OnTapped() → PickUp
 │   └── PowderTool.cs
 ├── UI/
-│   ├── MakeupTabsView.cs              — вкладки категорий, active/normal спрайты
-│   ├── ColorPaletteView.cs            — горизонтальная палитра, InstantiatePrefab
-│   ├── ColorItemView.cs               — кнопка одного цвета, event OnClicked
-│   └── FaceApplier.cs                 — слушает MakeupService, показывает overlays
-├── Installers/
-│   └── GameInstaller.cs               — MonoInstaller, все биндинги
+│   ├── MakeupTabsView.cs       — вкладки, инициализирует ColorPaletteView по категории
+│   ├── ColorPaletteView.cs     — строит палитру ОДИН РАЗ в Start через Init(category)
+│   ├── ColorItemView.cs        — кнопка цвета, event OnClicked(ColorItemView)
+│   ├── FaceApplier.cs          — слушает MakeupService, показывает overlays
+│   └── SpongeButton.cs         — ResetAll() без анимаций
+└── Installers/
+    └── GameInstaller.cs        — все Zenject биндинги
 ```
+
+## Ключевые решения
+
+### Hand
+- `_waitAnchor`, `_defaultAnchor` — Transform якоря на сцене (не в инструментах)
+- `brushPoint` — дочерний Transform, куда прикрепляется инструмент визуально
+- `OnDipReached`, `OnReturnedToShelf` — события для brush tools
+
+### LipstickTool
+- Каждый элемент палитры — отдельный экземпляр (префаб Lipstick = ColorItemView + LipstickTool)
+- Подписывается на свой ColorItemView через `GetComponent` в Start — не через глобальный OnItemChosen
+- Не биндится в GameInstaller (несколько экземпляров)
+
+### ColorPaletteView
+- Категорию получает от MakeupTabsView автоматически — в Inspector не выставлять
+- GridLayoutGroup удаляется после Build() — позиции фиксируются
+
+### Zenject — когда использовать
+- Связи между разными объектами/слоями — Inject
+- Компоненты на одном GameObject — GetComponent
+- Простые ссылки в одном объекте — SerializeField
 
 ## Zenject Bindings (GameInstaller)
-- `IMakeupService` → `MakeupService` AsSingle (pure C#)
-- `IProgressService` → `ProgressService` AsSingle (pure C#)
-- `MakeupController` — BindInterfacesAndSelfTo (IInitializable + IDisposable + конкретный тип)
-- `DragController` — AsSingle
-- `MakeupConfig` — BindInstance (ScriptableObject из инспектора)
-
-## Спрайты (Assets/Sprittes/ТЗ Unity developer/)
-- Категории: Помады (6), Румяна (9), Тени (9), Пудра (нет отдельных)
-- Инструменты: blush_brush, eye_brush, cream, loofah
-- UI: tabs_makeup_*, next_done_button, reset_button, shelf, background_pink
+- `IMakeupService` → `MakeupService` AsSingle
+- `IProgressService` → `ProgressService` AsSingle
+- `MakeupController` → BindInterfacesAndSelfTo AsSingle
+- `DragController` → AsSingle
+- `MakeupConfig` → BindInstance
+- `Hand`, `BlushTool`, `EyeshadowTool`, `CreamTool`, `PowderTool` → FromComponentInHierarchy AsSingle
+- `LipstickTool` — НЕ биндится (несколько экземпляров в сцене)
 
 ## MCP Unity
-- Настроен: порт 8090, AutoStartServer: true
-- Конфиг: `ProjectSettings/McpUnitySettings.json`
-- Сервер: `Library/PackageCache/com.gamelovers.mcp-unity@72c005fa0a/Server~/build/index.js`
-- MCP конфиг для Claude Code: `.mcp.json` в корне проекта (стандартный формат)
-  - `.claude/settings.json` также содержит конфиг, но глобальный `~/.claude/settings.json` не поддерживает `mcpServers`
-- При запуске Claude Code нужно нажать **Approve** на запрос доверия серверу `mcp-unity`
-- Unity Editor должен быть открыт с проектом до запуска Claude Code (WebSocket на порту 8090)
+- Порт 8090, AutoStartServer: true
+- Unity Editor должен быть открыт до запуска Claude Code
+- При запуске нажать Approve на запрос доверия серверу mcp-unity
 
-## Known Issues / TODO
-- Drag система есть, но нет MonoBehaviour который читает Input и вызывает DragController
-- Нет InputHandler (MouseInputHandler / TouchInputHandler)
-- ResultOverlay спрайты не назначены в MakeupItemData (тонирование через TintColor)
-
-## SOLID в проекте
-- **S**: каждый класс одна ответственность
-- **O**: BaseTool — abstract, расширяется без изменений
-- **L**: BlushTool / LipstickTool взаимозаменяемы с BaseTool
-- **I**: ITool и IDraggable разделены (MonoBehaviour может реализовать только одно)
-- **D**: UI зависит от IMakeupService, не от MakeupService
-
-## Команды Git
-```bash
-git add Assets/Scripts/
-git commit -m "feat: ..."
-```
+## TODO
+- Анимации: HandAnimator.cs + Animator + AnimationEvent → ReturnToShelf()
+- Scale инструмента при взятии (увеличить) и возврате (вернуть) через DOTween
+- GridLayout + помады: при SetParent элемент уходит из контейнера — grid пересчитывает позиции. Решение: `enabled = false` вместо Destroy, или зафиксировать позиции через LayoutRebuilder перед удалением
+- Анимировать подбор инструмента рукой — решить позже
